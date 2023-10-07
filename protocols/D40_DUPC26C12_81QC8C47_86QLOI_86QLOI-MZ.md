@@ -56,24 +56,24 @@ mkdir /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81Q
 
 for n in $(seq 13 24); do zcat /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/basecalling/pass/barcode${n}/*.fastq.gz | awk '{if(NR%4==1) {printf(">%s\n",substr($0,2));} else if(NR%4==2) print;}' > /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta ; done
 ```
-<!-->
+
 > number all reads from specific barcode
 
 ```bash
 for n in $(seq 13 24); do cat  /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta | grep start_time | wc -l ; done
 
-434365
-684140
-311543
-340348
-324905
-416290
-536758
-602009
-358931
-662891
-364188
-298014
+541274
+278833
+288674
+531662
+353998
+451717
+591833
+865262
+285429
+1505882
+769131
+690177
 ```
 
 ### BLASTN 107Qbarcode
@@ -83,7 +83,11 @@ source ~/.bashrc
 
 mkdir /lustrehome/gianluca/straglr/blastn/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ
 
-for n in 01 02 05 06 09 10 ; do blastn -task blastn-short -query /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta -subject /lustrehome/gianluca/straglr/barcode_fasta/barcode45Q.fa -outfmt 6 > /lustrehome/gianluca/straglr/blastn/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/barcode${n}_blastn_45Q.txt$(seq 13 24) ; do blastn -task blastn-short -query /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta -subject /lustrehome/gianluca/straglr/barcode_fasta/barcode81Q.fa -outfmt 6 > /lustrehome/gianluca/straglr/blastn/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/barcode${n}_blastn_81Q.txt ; done
+for n in $(seq 13 16) ; do blastn -task blastn-short -query /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta -subject /lustrehome/gianluca/straglr/barcode_fasta/barcode107Q_DUP.fa -outfmt 6 > /lustrehome/gianluca/straglr/blastn/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/barcode${n}_blastn_107Q_DUP.txt ; done 
+
+for n in $(seq 17 20) ; do blastn -task blastn-short -query /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta -subject /lustrehome/gianluca/straglr/barcode_fasta/barcode81Q.fa -outfmt 6 > /lustrehome/gianluca/straglr/blastn/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/barcode${n}_blastn_81Q.txt ; done
+
+for n in $(seq 21 24) ; do blastn -task blastn-short -query /lustrehome/gianluca/cattaneo/data/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/20221116_1243_MN37986_FAT13988_fa8b43a7/analysis/fastq2fasta/barcode${n}_allreads.fasta -subject /lustrehome/gianluca/straglr/barcode_fasta/barcode107Q_LOI.fa -outfmt 6 > /lustrehome/gianluca/straglr/blastn/AC2021_NANOPORE_PCR10/D40_DUPC26C12_81QC8C47_86QLOI_86QLOI-MZ/barcode${n}_blastn_107Q_LOI.txt ; done 
 ```
 
 ### *straglr*, for CAG count
