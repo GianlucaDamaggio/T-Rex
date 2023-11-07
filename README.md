@@ -20,7 +20,7 @@ chmod 755 *
 ## Overview
 
 <p align="center">
-  <img src="Figures/Rainbowdash_pipeline_flowchart.png" alt="drawing" width="900" title="Rainbowdash_pipeline_flowchart">
+  <img src="figures/Rainbowdash_pipeline_flowchart.png" alt="drawing" width="900" title="Rainbowdash_pipeline_flowchart">
 </p>
 
 ## Usage
