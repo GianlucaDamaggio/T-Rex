@@ -44,3 +44,5 @@ Usage:
     barcodeFilter                                                         Flag for filtering reads based on barcode identification
     countFormat                                                           Format for reporting STR length, choose between 'nCAG' or 'length'
     threshold                                                             threshold for noise filtering in Instability Index
+```
+
