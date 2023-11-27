@@ -59,7 +59,7 @@ process barcodeFiltering {
     mkdir -p ${params.resultsDir}/\$full_sample_name/barcodeFiltering
 
     #convert fastq to fasta
-    zcat ${fastqDir}/*.fastq.gz | awk \'{if(NR%4==1) {printf(\">%s\\n",substr(\$0,2));} else if(NR%4==2) print;}\' > ${params.resultsDir}/\$full_sample_name/barcodeFiltering/\$full_sample_name.fasta
+    zless ${fastqDir}/*.fastq* | awk \'{if(NR%4==1) {printf(\">%s\\n",substr(\$0,2));} else if(NR%4==2) print;}\' > ${params.resultsDir}/\$full_sample_name/barcodeFiltering/\$full_sample_name.fasta
 
     #blast read VS barcode
     /opt/conda/envs/straglr/bin/blastn -task blastn-short -query ${params.resultsDir}/\$full_sample_name/barcodeFiltering/\$full_sample_name.fasta -subject ${barcodeFile} -outfmt 6 > ${params.resultsDir}/\$full_sample_name/barcodeFiltering/\$full_sample_name\"_blastn.txt\"
@@ -88,7 +88,7 @@ process alignment {
     /workdir/ont-guppy-cpu/bin/guppy_aligner -i ${fastqDir} -s ${params.resultsDir}/\$full_sample_name/alignment/ --bam_out --align_ref ${params.referenceFile} -t ${task.cpus}
 
     #create file with path to bam files
-    ls ${params.resultsDir}/\$full_sample_name/alignment/*.fastq.bam > ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt
+    ls ${params.resultsDir}/\$full_sample_name/alignment/*.bam > ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt
     
     #merge bam files in groups of 100
     split -l 100 ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt ${params.resultsDir}/\$full_sample_name/alignment/split_
