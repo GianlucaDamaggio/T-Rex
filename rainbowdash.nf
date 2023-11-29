@@ -27,6 +27,8 @@ def helpMessage() {
     barcodeFilter                                                         Flag for filtering reads based on barcode identification
     countFormat                                                           Format for reporting STR length, choose between 'nCAG' or 'length'
     threshold                                                             threshold for noise filtering in Instability Index
+    numBamsChunk                                                          Number of bam files to be merged into a single bam file
+    maxF                                                                  Maximum number of jobs for the same process that can be submitted in parallel
     """.stripIndent()
 }
 
@@ -45,6 +47,7 @@ Channel
 
 //Barcode filtering
 process barcodeFiltering {
+    maxForks ${params.maxF}
     input:
     tuple val(Clone), val(PCR), val(Day), val(Replicate), val(fastqDir), val(barcodeFile)
 
@@ -72,6 +75,7 @@ process barcodeFiltering {
 
 //Alignment
 process alignment {
+    maxForks ${params.maxF}
     input:
     tuple val(Clone), val(PCR), val(Day), val(Replicate), val(fastqDir), val(barcodeFile)
         
@@ -90,8 +94,8 @@ process alignment {
     #create file with path to bam files
     ls ${params.resultsDir}/\$full_sample_name/alignment/*.bam > ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt
     
-    #merge bam files in groups of 100
-    split -l 100 ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt ${params.resultsDir}/\$full_sample_name/alignment/split_
+    #merge bam files in groups
+    split -l ${params.numBamsChunk} ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt ${params.resultsDir}/\$full_sample_name/alignment/split_
 
     ls ${params.resultsDir}/\$full_sample_name/alignment/split_* | while read line ; do samtools merge -f -@ ${task.cpus} \${line}.multi.bam -b \$line ; samtools index \${line}.multi.bam; done
 
@@ -107,6 +111,7 @@ process alignment {
 //STR Sizing
 
 process STRSizing {
+    maxForks ${params.maxF}
     input:
     tuple val(Clone), val(PCR), val(Day), val(Replicate), val(fastqDir), val(barcodeFile)
         
