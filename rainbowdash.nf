@@ -47,7 +47,7 @@ Channel
 
 //Barcode filtering
 process barcodeFiltering {
-    maxForks ${params.maxF}
+    maxForks params.maxF
     input:
     tuple val(Clone), val(PCR), val(Day), val(Replicate), val(fastqDir), val(barcodeFile)
 
@@ -75,7 +75,7 @@ process barcodeFiltering {
 
 //Alignment
 process alignment {
-    maxForks ${params.maxF}
+    maxForks params.maxF
     input:
     tuple val(Clone), val(PCR), val(Day), val(Replicate), val(fastqDir), val(barcodeFile)
         
@@ -111,7 +111,7 @@ process alignment {
 //STR Sizing
 
 process STRSizing {
-    maxForks ${params.maxF}
+    maxForks params.maxF
     input:
     tuple val(Clone), val(PCR), val(Day), val(Replicate), val(fastqDir), val(barcodeFile)
         
