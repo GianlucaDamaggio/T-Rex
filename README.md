@@ -44,6 +44,8 @@ Usage:
     barcodeFilter                                                         Flag for filtering reads based on barcode identification
     countFormat                                                           Format for reporting STR length, choose between 'nCAG' or 'length'
     threshold                                                             threshold for noise filtering in Instability Index
+    numBamsChunk                                                          Number of bam files to be merged into a single bam file
+    maxF                                                                  Maximum number of jobs for the same process that can be submitted in parallel
 ```
 
 ## Citation
