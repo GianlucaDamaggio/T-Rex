@@ -92,8 +92,8 @@ process alignment {
     /workdir/ont-guppy-cpu/bin/guppy_aligner -i ${fastqDir} -s ${params.resultsDir}/\$full_sample_name/alignment/ --bam_out --align_ref ${params.referenceFile} -t ${task.cpus}
 
     #create file with path to bam files
-    ls ${params.resultsDir}/\$full_sample_name/alignment/*.bam > ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt
-    
+    find ${params.resultsDir}/\$full_sample_name/alignment/ -name \".bam\" > ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt
+
     #merge bam files in groups
     split -l ${params.numBamsChunk} ${params.resultsDir}/\$full_sample_name/alignment/bam_list.txt ${params.resultsDir}/\$full_sample_name/alignment/split_
 
