@@ -28,7 +28,10 @@ library("tidyverse")
 library("scales")
 library("optparse")
 
+#set balanced_ds <- 0 if you do not want to perform strand balancing
 balanced_ds <- 0
+#set skip downsampling_flag <- 1 if you want to skip downsampling
+skip_downsampling_flag <- 1
 
 #convert variables in numeric format
 threshold <- as.numeric(strsplit(threshold, split = ",")[[1]])
@@ -81,7 +84,7 @@ for (div in days) {
     return(blast)
   })
   ## SAVE BLAST INFORMATION
-  blast <- gsub(x = gsub(x = unique(basename(sampleSheet[which(sampleSheet$Day == div), "barcodeFile"])), pattern = "\\..*", replacement = ""), pattern = "barcode", replacement = "")
+  genotype <- gsub(x = gsub(x = unique(basename(sampleSheet[which(sampleSheet$Day == div), "barcodeFile"])), pattern = "\\..*", replacement = ""), pattern = "barcode", replacement = "")
   #read straglr tsv files
   straglr_files_curr <- straglr_files[rownames(sampleSheet)[which(sampleSheet$Day == div)]]
   tsv_df <- lapply(straglr_files_curr, function(x) {
@@ -130,7 +133,7 @@ for (div in days) {
         ind_filt <- which(df$n_CAG - floor(df$n_CAG) > 0.1 & df$n_CAG - floor(df$n_CAG) < 0.4)
         al_dir <- df$alignment_direction
         if (length(ind_filt) > 0) {
-          temp_count <- data.frame(count = round(df$n_CAG[ind_filt]), strand = al_dir[ind_filt], day, blast)  
+          temp_count <- data.frame(count = round(df$n_CAG[ind_filt]), strand = al_dir[ind_filt], day, genotype)  
         } else {
           temp_count <- c()
         }
@@ -156,7 +159,7 @@ for (div in days) {
     both <- c(plus, minus, all)
     names(both) <- c("+", "-", "all")
     return(both)
-    }))
+  }))
   
   #evaluate the number of reads by strand for balanced or unbalanced downsampled
   num_reads_all <- num_reads[grep(x = names(num_reads), pattern = "\\.all")]
@@ -183,33 +186,20 @@ for (div in days) {
   sample_name <- c()
   replicates <- c()
   
-  for (s in n_seed) {
-    set.seed(s)
-    ## DOWNSAMPLE EACH RUN USING THE LIMITING ONE
+  if (skip_downsampling_flag == 1) {
     for (i in 1:nrow(names_split)) {
       ## assign to each df the correct name
       name <- paste(names_split$Clone[i], names_split$PCR[i], names_split$Day[i], names_split$Replicate[i], sep = "_")
-      clone_name <- append(clone_name, names_split[i, 1])
-      sample_name <- append(sample_name, name)
-      replicates <- append(replicates, names_split[i, 4])
       df <- get(paste0('filt_good_reads_', name))
-      df$seed <- s
+      df$seed <- 1
       df$replicate <- names_split[i, 4]
-      if (balanced_ds == 1) {
-        df_plus <- df[which(df$strand == "+"), setdiff(colnames(df), "strand")]
-        df_minus <- df[which(df$strand == "-"), setdiff(colnames(df), "strand")]
-        df_plus_ds <- df_plus[sample(nrow(df_plus), size = num_reads_balanced_limiting * percentage/100, replace = FALSE), ]
-        df_minus_ds <- df_minus[sample(nrow(df_minus), size = num_reads_balanced_limiting * percentage/100, replace = FALSE), ]
-        df_downsampled <- rbind(df_plus_ds, df_minus_ds)
-      } else {
-        df <- df[, setdiff(colnames(df), "strand")]
-        df_downsampled <- df[sample(nrow(df), size = num_reads_all_limiting * percentage/100, replace = FALSE), ]
-      }
+      df <- df[, setdiff(colnames(df), "strand")]
+      df_downsampled <- df
       assign(paste0("downsampled_", name), df_downsampled, envir = globalenv() ) ## use the variable in the for loop as object one
     }
-    ## MERGE THE DIFFERENT PCR FROM THE SAMPLE CLONE  <--- !!! CAMBIARE QUI PER FARE MERGE SOLO DELLO STESSO REPLICATO BIOLOGICO
-    for (cl in unique(clone_name)) {
-      for (n in unique(replicates)) {
+    ## MERGE THE DIFFERENT PCR FROM THE SAMPLE CLONE
+    for (cl in unique(names_split$Clone)) {
+      for (n in unique(names_split[which(names_split$Clone == cl), "Replicate"])) {
         # df_names = file downsampled
         ## check if we have clone and replicate binded:
         if (length(ls()[str_detect(ls(), n) & str_detect(ls(), paste0("downsampled_", cl, "_")) & str_detect(ls(), "downsampled_")]) > 0){
@@ -218,29 +208,73 @@ for (div in days) {
           if (length(df_names) == 1) {
             temp_df <- get(df_names)
           } else {
-            df_dowsampled_1 <- get(df_names[1])
-            df_dowsampled_2 <- get(df_names[2])
-            if (balanced_ds == 1) {
-              df_downsampled_1 <- df_dowsampled_1[sample(nrow(df_dowsampled_1), size = min(as.numeric(num_reads_balanced_limiting)) * percentage/100, replace = FALSE), ]
-              df_downsampled_2 <- df_dowsampled_2[sample(nrow(df_dowsampled_2), size = min(as.numeric(num_reads_balanced_limiting)) * percentage/100, replace = FALSE), ]
-            } else {
-              df_downsampled_1 <- df_dowsampled_1[sample(nrow(df_dowsampled_1), size = min(as.numeric(num_reads_all_limiting)/2) * percentage/100, replace = FALSE), ]
-              df_downsampled_2 <- df_dowsampled_2[sample(nrow(df_dowsampled_2), size = min(as.numeric(num_reads_all_limiting)/2) * percentage/100, replace = FALSE), ]
-            }
+            df_downsampled_1_full <- get(df_names[1])
+            df_downsampled_2_full <- get(df_names[2]) 
             #merge the two dataframes
-            temp_df <- rbind(df_dowsampled_1, df_dowsampled_2)
+            temp_df <- rbind(df_downsampled_1_full, df_downsampled_2_full)
           }
-          df <- temp_df %>% group_by(clone, count, day, blast, seed, replicate) %>% tally()
-          df_to_build <- rbind(df_to_build, df)
+        }
+        df <- temp_df %>% group_by(clone, count, day, , seed, replicate) %>% tally()
+        df_to_build <- rbind(df_to_build, df)
+      }
+    }
+  } else {
+    for (s in n_seed) {
+      set.seed(s)
+      ## DOWNSAMPLE EACH RUN USING THE LIMITING ONE
+      for (i in 1:nrow(names_split)) {
+        ## assign to each df the correct name
+        name <- paste(names_split$Clone[i], names_split$PCR[i], names_split$Day[i], names_split$Replicate[i], sep = "_")
+        df <- get(paste0('filt_good_reads_', name))
+        df$seed <- s
+        df$replicate <- names_split[i, 4]
+        if (balanced_ds == 1) {
+          df_plus <- df[which(df$strand == "+"), setdiff(colnames(df), "strand")]
+          df_minus <- df[which(df$strand == "-"), setdiff(colnames(df), "strand")]
+          df_plus_ds <- df_plus[sample(nrow(df_plus), size = num_reads_balanced_limiting * percentage/100, replace = FALSE), ]
+          df_minus_ds <- df_minus[sample(nrow(df_minus), size = num_reads_balanced_limiting * percentage/100, replace = FALSE), ]
+          df_downsampled <- rbind(df_plus_ds, df_minus_ds)
+        } else {
+          df <- df[, setdiff(colnames(df), "strand")]
+          df_downsampled <- df[sample(nrow(df), size = num_reads_all_limiting * percentage/100, replace = FALSE), ]
+        }
+        assign(paste0("downsampled_", name), df_downsampled, envir = globalenv() ) ## use the variable in the for loop as object one
+      }
+      ## MERGE THE DIFFERENT PCR FROM THE SAMPLE CLONE
+      for (cl in unique(names_split$Clone)) {
+        for (n in unique(names_split[which(names_split$Clone == cl), "Replicate"])) {
+          # df_names = file downsampled
+          ## check if we have clone and replicate binded:
+          if (length(ls()[str_detect(ls(), n) & str_detect(ls(), paste0("downsampled_", cl, "_")) & str_detect(ls(), "downsampled_")]) > 0){
+            df_names <- ls()[str_detect(ls(), n) & str_detect(ls(), paste0("downsampled_", cl, "_")) & str_detect(ls(), "downsampled_")]
+            ## check df_names length to decide whether different PCRs from the same clone should be merged
+            if (length(df_names) == 1) {
+              temp_df <- get(df_names)
+            } else {
+              df_downsampled_1_full <- get(df_names[1])
+              df_downsampled_2_full <- get(df_names[2])
+              if (balanced_ds == 1) {
+                df_downsampled_1 <- df_downsampled_1_full[sample(nrow(df_downsampled_1_full), size = min(as.numeric(num_reads_balanced_limiting)) * percentage/100, replace = FALSE), ]
+                df_downsampled_2 <- df_downsampled_2_full[sample(nrow(df_downsampled_2_full), size = min(as.numeric(num_reads_balanced_limiting)) * percentage/100, replace = FALSE), ]
+              } else {
+                df_downsampled_1 <- df_downsampled_1_full[sample(nrow(df_downsampled_1_full), size = min(as.numeric(num_reads_all_limiting)/2) * percentage/100, replace = FALSE), ]
+                df_downsampled_2 <- df_downsampled_2_full[sample(nrow(df_downsampled_2_full), size = min(as.numeric(num_reads_all_limiting)/2) * percentage/100, replace = FALSE), ]
+              }
+              #merge the two dataframes
+              temp_df <- rbind(df_downsampled_1, df_downsampled_2)
+            }
+            df <- temp_df %>% group_by(clone, count, day, genotype, seed, replicate) %>% tally()
+            df_to_build <- rbind(df_to_build, df)
+          }
         }
       }
     }
   }
-  rm(list=(setdiff(ls(), c('df_final', 'df_to_build','n_seed','percentage', 'resultsDir', 'alignment_files', 'straglr_files', 'blast_files','type', 'filter', 'queryCovThr', 'targetChr', 'minAlLength', 'dayNorm', 'sampleSheet', 'threshold', 'balanced_ds'))))
+  rm(list=(setdiff(ls(), c('df_final', 'df_to_build','n_seed','percentage', 'resultsDir', 'alignment_files', 'straglr_files', 'blast_files','type', 'filter', 'queryCovThr', 'targetChr', 'minAlLength', 'dayNorm', 'sampleSheet', 'threshold', 'balanced_ds', 'skip_downsampling_flag'))))
 }
 cat("Built final database\n")
 
-names(df_to_build)[names(df_to_build) == "blast"] <- "sample"
+names(df_to_build)[names(df_to_build) == "genotype"] <- "sample"
 df_instability <- as.data.frame(df_to_build)
 rm(df_to_build)
 
