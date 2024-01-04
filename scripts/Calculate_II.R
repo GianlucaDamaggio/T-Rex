@@ -214,7 +214,7 @@ for (div in days) {
             temp_df <- rbind(df_downsampled_1_full, df_downsampled_2_full)
           }
         }
-        df <- temp_df %>% group_by(clone, count, day, , seed, replicate) %>% tally()
+        df <- temp_df %>% group_by(clone, count, day, genotype, seed, replicate) %>% tally()
         df_to_build <- rbind(df_to_build, df)
       }
     }
