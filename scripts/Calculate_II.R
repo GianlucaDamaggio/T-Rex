@@ -173,12 +173,14 @@ for (div in days) {
   limiting_minus <- gsub(x = gsub(x = names(num_reads_minus[which(num_reads_minus == min(num_reads_minus))]), pattern = "\\.\\-", replacement = ""), pattern = "filt_good_reads_", replacement = "")
   limiting_balanced <- gsub(x = gsub(x = names(num_reads[which(num_reads == min(num_reads))]), pattern = "\\.\\+|\\.\\-", replacement = ""), pattern = "filt_good_reads_", replacement = "")  
   
-  if (balanced_ds == 1) {
-    cat(sprintf("Limiting run for '+' strand: %s (%d reads)\n", limiting_plus, min(num_reads_plus)))
-    cat(sprintf("Limiting run for '-' strand: %s (%d reads)\n", limiting_minus, min(num_reads_minus)))
-    cat(sprintf("Limiting run for balanced downsampling: %s (%d reads)\n", limiting_balanced, num_reads_balanced_limiting))
-  } else {
-    cat(sprintf("Limiting run: %s (%d reads)\n", limiting_all, min(num_reads_all)))  
+  if (skip_downsampling_flag != 1) {
+    if (balanced_ds == 1) {
+      cat(sprintf("Limiting run for '+' strand: %s (%d reads)\n", limiting_plus, min(num_reads_plus)))
+      cat(sprintf("Limiting run for '-' strand: %s (%d reads)\n", limiting_minus, min(num_reads_minus)))
+      cat(sprintf("Limiting run for balanced downsampling: %s (%d reads)\n", limiting_balanced, num_reads_balanced_limiting))
+    } else {
+      cat(sprintf("Limiting run: %s (%d reads)\n", limiting_all, min(num_reads_all)))  
+    }
   }
   
   ## SET OPTION & CREATE EMPTY VECTOR
@@ -193,8 +195,17 @@ for (div in days) {
       df <- get(paste0('filt_good_reads_', name))
       df$seed <- 1
       df$replicate <- names_split[i, 4]
-      df <- df[, setdiff(colnames(df), "strand")]
-      df_downsampled <- df
+      if (balanced_ds == 1) {
+        df_plus <- df[which(df$strand == "+"), setdiff(colnames(df), "strand")]
+        df_minus <- df[which(df$strand == "-"), setdiff(colnames(df), "strand")]
+        num_reads_balanced_limiting <- min(length(df_plus[, 1]), length(df_minus[, 1]))
+        df_plus_ds <- df_plus[sample(nrow(df_plus), size = num_reads_balanced_limiting * percentage/100, replace = FALSE), ]
+        df_minus_ds <- df_minus[sample(nrow(df_minus), size = num_reads_balanced_limiting * percentage/100, replace = FALSE), ]
+        df_downsampled <- rbind(df_plus_ds, df_minus_ds)
+      } else {
+        df <- df[, setdiff(colnames(df), "strand")]
+        df_downsampled <- df
+      }
       assign(paste0("downsampled_", name), df_downsampled, envir = globalenv() ) ## use the variable in the for loop as object one
     }
     ## MERGE THE DIFFERENT PCR FROM THE SAMPLE CLONE
