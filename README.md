@@ -13,7 +13,7 @@
 
 ```
 git clone https://github.com/GianlucaDamaggio/T-Rex.git
-cd HD_dittograph
+cd T-Rex
 chmod 755 *
 ```
 
