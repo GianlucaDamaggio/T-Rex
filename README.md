@@ -20,16 +20,16 @@ chmod 755 *
 ## Overview
 
 <p align="center">
-  <img src="figures/Rainbowdash_pipeline_flowchart.png" alt="drawing" width="900" title="Rainbowdash_pipeline_flowchart">
+  <img src="figures/T-Rex_pipeline_flowchart.png" alt="drawing" width="900" title="T-Rex_pipeline_flowchart">
 </p>
 
 ## Usage
 
-The T-Rex pipeline requires you to open rainbowdash.conf configuration file and set the desired options. Then, you can run the pipeline using either docker or singularity environments just specifying a value for the -profile variable.
+The T-Rex pipeline requires you to open nextflow.config configuration file and set the desired options. Then, you can run the pipeline using either docker or singularity environments just specifying a value for the -profile variable.
 
 ```
 Usage:
-    nextflow -c rainbowdash.conf run rainbowdash.nf --sampleSheet = "/path/to/sampleSheet.tsv" --scriptsDir = "/path/to/scripts_dir" --resultsDir = "/path/to/resultsDir" -profile docker
+    nextflow -c nextflow.config run main.nf --sampleSheet = "/path/to/sampleSheet.tsv" --scriptsDir = "/path/to/scripts_dir" --resultsDir = "/path/to/resultsDir" -profile docker
     Mandatory argument:
     -profile                                                              Configuration profile to use. Available: docker, singularity
     Other mandatory arguments which may be specified in the rainbowdash.conf file
