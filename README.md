@@ -50,6 +50,8 @@ Usage:
 
 ## Citation
 
+Zobel M, Damaggio G, Mignogna ML, Besusso D, Scalzo D, Cossu A, Trovesi C, Crosti M, Cortina F, Campus I, Formenti G, Mazzara S, Gregoretti F, Antonelli L, Oliva G, Zuccato C, Colonna V, Conforti P, Cereda M, Rossi RL, Maestri S, Scolz A, Iennaco R, Cattaneo E. A human CAGinSTEM platform for decoding HTT repeats' somatic instability links CAG interruption to HD pathology in neurons. Cell Rep. 2025 Dec 11;44(12):116685. doi: 10.1016/j.celrep.2025.116685. Epub ahead of print. PMID: 41389205.
+
 For further information, please refer to the following manuscripts:
 
 Di Tommaso, P., Chatzou, M., Floden, E. W., Barja, P. P., Palumbo, E., & Notredame, C. (2017). Nextflow enables reproducible computational workflows. Nature Biotechnology, 35(4), 316–319. doi:10.1038/nbt.3820
